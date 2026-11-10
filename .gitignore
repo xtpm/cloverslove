@@ -7,7 +7,8 @@ Thumbs.db
 .claude/
 alt/
 
-# media isn't mine to redistribute, so it stays out of the repo.
-# see README.md for the files the site expects.
-public/assets/video/
-public/assets/music/
+# only the media the live site uses is committed; old/unused files stay local
+public/assets/video/*
+!public/assets/video/landscape.mp4
+public/assets/music/*
+!public/assets/music/background.mp3

@@ -19,16 +19,15 @@ npm install
 npm run dev
 ```
 
-## media (not included)
-
-the background video and music aren't mine to redistribute, so they're not in this repo.
-the site still runs without them, just without a moving background or music.
-to get the full thing, drop your own files in:
+## media
 
 | file | used for |
 | --- | --- |
-| `public/assets/video/landscape.mp4` | background video |
-| `public/assets/music/background.mp3` | background music |
+| `public/assets/video/landscape.mp4` | background video (genshin impact landscape, © HoYoverse) |
+| `public/assets/music/background.mp3` | background music (sabbath, from the saya no uta ost) |
+
+neither is mine; they're here for a non-commercial personal site and belong to their owners.
+swap in your own files with the same names to change them.
 
 optional: put your own sound effects in `public/assets/sfx/` (see the readme there) to replace
 the built-in menu blips.
