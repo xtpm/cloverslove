@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+Thumbs.db
+
+# local-only folders
+.claude/
+alt/
+
+# media isn't mine to redistribute, so it stays out of the repo.
+# see README.md for the files the site expects.
+public/assets/video/
+public/assets/music/

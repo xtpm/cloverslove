@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2a2440" />
+  <title>dylan</title>
+  <meta name="description" content="dylan — cybersecurity student and independent developer from pennsylvania." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2385c4ff'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23ffc85a'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23141a2b'/%3E%3Ccircle cx='12' cy='11' r='2.4' fill='%23fff'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=DotGothic16&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="is-home">
+  <!-- ========== background ========== -->
+  <div class="world" aria-hidden="true">
+    <div class="scene" id="scene">
+      <video id="bg" src="/assets/video/landscape.mp4" autoplay muted loop playsinline preload="auto"></video>
+    </div>
+    <div class="tint"></div>
+    <div class="scan"></div>
+  </div>
+
+  <!-- ========== intro ========== -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <span class="intro-count" id="introCount">0</span>
+    <span class="intro-line">its all luck</span>
+  </div>
+
+  <!-- ========== home ========== -->
+  <div class="home" id="home">
+    <div class="brand-slot" id="homeSlot">
+      <a class="brand" id="brand" href="#" aria-label="dylan, cybersecurity student. back to menu" data-nav>
+        <span class="brand-name">dylan</span>
+        <span class="brand-sub">cybersecurity student</span>
+      </a>
+    </div>
+
+    <nav class="menu" id="menu" aria-label="main menu">
+      <button data-go="about" data-nav><span>about me</span></button>
+      <button data-go="repos" data-nav><span>repos</span></button>
+      <button data-go="socials" data-nav><span>socials</span></button>
+      <button data-go="settings" data-nav><span>settings</span></button>
+    </nav>
+
+    <p class="home-hint">its all luck</p>
+  </div>
+
+  <!-- ========== section column ========== -->
+  <div class="column" id="column" aria-live="polite">
+    <div class="column-brand" id="columnSlot"></div>
+
+    <div class="column-head">
+      <button class="back" id="back" data-nav>‹ back</button>
+      <span class="column-title" id="columnTitle"></span>
+    </div>
+
+    <div class="subtabs" id="subtabs" role="tablist"></div>
+
+    <div class="pane" id="pane">
+      <!-- ABOUT -->
+      <section data-section="about" data-title="about me" hidden>
+        <div data-sub="me">
+          <div class="hello">
+            <img class="hello-av" id="dAvatar" src="https://cdn.discordapp.com/avatars/262467539685212160/5015670a74a26d459620fa25a56ab360.png?size=128" alt="" />
+            <div>
+              <h2>hi, i'm dylan!</h2>
+              <p class="presence"><span class="pdot" id="dDot"></span><span id="dStatus">checking discord…</span></p>
+            </div>
+          </div>
+          <p>i'm 20, studying cybersecurity and building things on the side out of pennsylvania.</p>
+          <p>mostly web tools, interfaces, and little corners of the internet like this one. the code lives on <a class="u" href="https://github.com/xtpm" target="_blank" rel="noopener">github</a>.</p>
+          <p>the rest of the time i'm hunting for <a class="u" href="https://www.discogs.com/user/bypassing" target="_blank" rel="noopener">cds</a>. lots of shibuya-kei, some hyperpop, and anything Lamp ever put out.</p>
+
+          <dl class="facts">
+            <div>
+              <dt>right now</dt>
+              <dd><span id="actTitle">not doing anything</span> <small id="actSub">discord is quiet.</small></dd>
+            </div>
+            <div>
+              <dt>birthday</dt>
+              <dd><span id="bdayCount">—</span> <small>until june 12</small></dd>
+            </div>
+          </dl>
+
+          <a class="gh" href="https://github.com/xtpm" target="_blank" rel="noopener" aria-label="github contributions for xtpm">
+            <span class="gh-head"><span>github</span><span id="ghTotal"></span></span>
+            <span class="gh-months" id="ghMonths"></span>
+            <span class="gh-grid" id="ghGrid"></span>
+          </a>
+
+          <div class="icons">
+            <a href="https://github.com/xtpm" target="_blank" rel="noopener" aria-label="github"><i class="ico" style="--i:url(https://cdn.jsdelivr.net/npm/simple-icons@13.0.0/icons/github.svg)"></i></a>
+            <a href="https://www.discogs.com/user/bypassing" target="_blank" rel="noopener" aria-label="discogs"><i class="ico" style="--i:url(https://cdn.jsdelivr.net/npm/simple-icons@13.0.0/icons/discogs.svg)"></i></a>
+            <a href="https://x.com/retrialed" target="_blank" rel="noopener" aria-label="x"><i class="ico" style="--i:url(https://cdn.jsdelivr.net/npm/simple-icons@13.0.0/icons/x.svg)"></i></a>
+            <a href="https://instagram.com/0mkx" target="_blank" rel="noopener" aria-label="instagram"><i class="ico" style="--i:url(https://cdn.jsdelivr.net/npm/simple-icons@13.0.0/icons/instagram.svg)"></i></a>
+            <a href="https://tiktok.com/@zuxm" target="_blank" rel="noopener" aria-label="tiktok"><i class="ico" style="--i:url(https://cdn.jsdelivr.net/npm/simple-icons@13.0.0/icons/tiktok.svg)"></i></a>
+            <a href="https://t.me/retria1" target="_blank" rel="noopener" aria-label="telegram"><i class="ico" style="--i:url(https://cdn.jsdelivr.net/npm/simple-icons@13.0.0/icons/telegram.svg)"></i></a>
+          </div>
+        </div>
+
+        <div data-sub="music">
+          <h2>on repeat</h2>
+          <p class="sub-note">whatever's on spotify right now</p>
+          <div class="list" id="musicList"></div>
+        </div>
+      </section>
+
+      <!-- REPOS -->
+      <section data-section="repos" data-title="repos" hidden>
+        <div data-sub="repos">
+          <h2>things i've built</h2>
+          <p class="sub-note"><span id="repoCount">…</span> public repos, newest first. all on <a class="u" href="https://github.com/xtpm" target="_blank" rel="noopener">github</a></p>
+          <input class="search" id="repoSearch" type="search" placeholder="search…" aria-label="search repos" />
+          <div class="list" id="repoList"><p class="empty">loading…</p></div>
+        </div>
+      </section>
+
+      <!-- SOCIALS -->
+      <section data-section="socials" data-title="socials" hidden>
+        <div data-sub="links">
+          <div class="links">
+            <a href="https://github.com/xtpm" target="_blank" rel="noopener"><b>github</b><span>xtpm</span></a>
+            <a href="https://www.discogs.com/user/bypassing" target="_blank" rel="noopener"><b>discogs</b><span>bypassing</span></a>
+            <a href="https://x.com/retrialed" target="_blank" rel="noopener"><b>x</b><span>retrialed</span></a>
+            <a href="https://instagram.com/0mkx" target="_blank" rel="noopener"><b>instagram</b><span>0mkx</span></a>
+            <a href="https://tiktok.com/@zuxm" target="_blank" rel="noopener"><b>tiktok</b><span>zuxm</span></a>
+            <a href="https://t.me/retria1" target="_blank" rel="noopener"><b>telegram</b><span>retria1</span></a>
+            <a class="static"><b>discord</b><span>yikesdylan</span></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section data-section="settings" data-title="settings" hidden>
+        <div data-sub="settings">
+          <div class="settings">
+            <label class="opt"><span>music</span><input type="checkbox" data-setting="music" /><i class="sw"></i></label>
+            <label class="opt"><span>menu sounds</span><input type="checkbox" data-setting="sfx" checked /><i class="sw"></i></label>
+            <label class="opt"><span>moving background</span><input type="checkbox" data-setting="video" checked /><i class="sw"></i></label>
+            <label class="opt"><span>less motion</span><input type="checkbox" data-setting="calm" /><i class="sw"></i></label>
+            <button class="opt" id="replayIntro"><span>replay intro</span><em>↺</em></button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ========== corners ========== -->
+  <div class="corner bl">
+    <button class="cbtn" id="soundBtn" aria-pressed="false"><i class="eq"><b></b><b></b><b></b></i><span id="soundState">music off</span></button>
+  </div>
+  <div class="corner br">
+    <p class="msg" id="msg"></p>
+    <p class="clock"><span id="clock">--:--</span> in pa</p>
+  </div>
+
+  <audio id="audio" loop preload="auto"></audio>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
