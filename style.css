@@ -70,15 +70,14 @@ img { display: block; max-width: 100%; }
 .splash-inner { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center;
   transition: transform .7s var(--out), opacity .45s, filter .6s; }
 .splash.opening .splash-inner { transform: scale(1.12); opacity: 0; filter: blur(6px); }
-.splash-name { margin: 0; font-family: var(--name); font-size: clamp(64px, 11vw, 150px); line-height: .9; letter-spacing: -.03em; color: #fff;
+.splash-name { margin: 0; font-family: var(--name); font-size: clamp(38px, 6.4vw, 96px); line-height: 1; letter-spacing: -.02em; text-wrap: balance; padding: 0 16px; color: #fff;
   text-shadow: 0 8px 40px rgba(10, 8, 30, .6); animation: rise 1.4s var(--out) both .15s; }
 .splash-rule { display: block; height: 1px; width: min(280px, 60vw); background: linear-gradient(90deg, transparent, var(--iris), transparent);
   transform: scaleX(0); animation: draw 1.2s var(--out) forwards .7s; }
-.splash-cta { display: flex; align-items: center; gap: 6px; margin: 0; font-family: var(--pixel); font-size: 14px; letter-spacing: .14em; color: var(--dim);
-  animation: rise 1s var(--out) both 1.1s; }
-.splash-cta span { animation: breathe 2.6s ease-in-out infinite 2.1s; }
 .caret { width: 8px; height: 14px; background: var(--iris); animation: blink 1s steps(1) infinite; }
-.splash:hover .splash-cta, .splash:focus-visible .splash-cta { color: var(--ink); }
+.splash-name .caret { display: inline-block; width: .11em; height: .72em; margin-left: .14em; vertical-align: -.02em; }
+.splash-name { transition: color .2s; }
+.splash:not(:hover):not(:focus-visible) .splash-name { color: rgba(255, 255, 255, .9); }
 .splash-foot { position: absolute; bottom: calc(26px + env(safe-area-inset-bottom)); margin: 0; font-family: var(--pixel); font-size: 12px; letter-spacing: .12em;
   color: var(--faint); animation: rise 1s var(--out) both 1.4s; transition: opacity .3s; }
 .splash.opening .splash-foot { opacity: 0; }
