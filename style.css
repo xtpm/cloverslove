@@ -332,3 +332,11 @@ body:not(.is-locked) .home.entering .menu button, body:not(.is-locked) .home.ent
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* recently played (music tab) */
+.hist-head { display: flex; gap: 8px; align-items: baseline; margin: 26px 0 6px; padding-top: 14px; border-top: 1px solid var(--line);
+  font-family: var(--pixel); font-weight: 400; font-size: 12px; letter-spacing: .08em; color: var(--faint); }
+.hist-head span { color: var(--iris); }
+#historyList .row img { width: 42px; height: 42px; }
+#historyList .row { grid-template-columns: 42px minmax(0, 1fr) auto; padding: 7px 8px; }
+#historyList .row b { font-size: 13.5px; }

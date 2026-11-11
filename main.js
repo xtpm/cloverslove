@@ -206,7 +206,7 @@ function renderSection(name) {
   });
   showSub(sec, 0);
   if (name === "repos") loadRepos();
-  if (name === "about") { renderMusic(); loadRepos(); }
+  if (name === "about") { renderMusic(); loadRepos(); loadHistory(); }
 }
 function showSub(sec, i) {
   $$("[data-sub]", sec).forEach((s, j) => (s.hidden = j !== i));
@@ -334,33 +334,76 @@ addEventListener("popstate", () => {
 const STATUS = { online: ["#3ba55d", "online"], idle: ["#faa81a", "idle"], dnd: ["#ed4245", "do not disturb"], offline: ["#747f8d", "offline"] };
 let spotify = null;
 
+// a "play" is a track plus when it started, same as the worker logs it
+const playFrom = (sp) => ({
+  id: sp.track_id, song: sp.song, artist: sp.artist, album: sp.album, art: sp.album_art_url,
+  start: sp.timestamps?.start ?? Date.now(), end: sp.timestamps?.end ?? null,
+});
+
+function applyPresence(d) {
+  const u = d.discord_user;
+  if (u?.avatar) $("#dAvatar").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith("a_") ? "gif" : "png"}?size=128`;
+  const [color, label] = STATUS[d.discord_status] || STATUS.offline;
+  $("#dDot").style.background = color;
+  $("#dDot").style.color = color;
+  $("#dStatus").textContent = `${label} on discord`;
+
+  const acts = d.activities || [];
+  const custom = acts.find((a) => a.type === 4);
+  const act = acts.find((a) => a.type !== 4 && a.name !== "Spotify");
+  $("#msg").textContent = custom?.state || "";
+  $("#actTitle").textContent = act ? act.name : "not doing anything";
+  $("#actSub").textContent = act ? [act.details, act.state].filter(Boolean).join(" · ") || "in progress" : "discord is quiet.";
+
+  const next = d.listening_to_spotify ? d.spotify : null;
+  // the song changed (or stopped): the one that was playing goes into
+  // "recently played" right away, without waiting for the worker
+  if (spotify && (!next || next.track_id !== spotify.track_id || next.timestamps?.start !== spotify.timestamps?.start)) {
+    notePlay(playFrom(spotify));
+  }
+  spotify = next;
+  renderMusic();
+  renderHistory();
+}
+
+// fallback: plain polling, only used while the live connection is down
 async function presence() {
   try {
     const j = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`).then((r) => r.json());
-    if (!j.success) return;
-    const d = j.data;
-    const u = d.discord_user;
-    if (u?.avatar) $("#dAvatar").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith("a_") ? "gif" : "png"}?size=128`;
-    const [color, label] = STATUS[d.discord_status] || STATUS.offline;
-    $("#dDot").style.background = color;
-    $("#dDot").style.color = color;
-    $("#dStatus").textContent = `${label} on discord`;
-
-    const acts = d.activities || [];
-    const custom = acts.find((a) => a.type === 4);
-    const act = acts.find((a) => a.type !== 4 && a.name !== "Spotify");
-    $("#msg").textContent = custom?.state || "";
-    $("#actTitle").textContent = act ? act.name : "not doing anything";
-    $("#actSub").textContent = act ? [act.details, act.state].filter(Boolean).join(" · ") || "in progress" : "discord is quiet.";
-
-    spotify = d.listening_to_spotify ? d.spotify : null;
-    renderMusic();
+    if (j.success) applyPresence(j.data);
   } catch {
     $("#msg").textContent = "";
   }
 }
+
+/* live presence: Lanyard pushes changes over a websocket the moment Discord
+   sees them, instead of us asking every few seconds */
+let liveSocket = null;
+function connectLive(retry = 1000) {
+  let beat;
+  let ws;
+  try { ws = new WebSocket("wss://api.lanyard.rest/socket"); } catch { return; }
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    if (m.op === 1) {
+      // hello: start heartbeats, then subscribe
+      beat = setInterval(() => ws.readyState === 1 && ws.send(JSON.stringify({ op: 3 })), m.d.heartbeat_interval);
+      ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_ID } }));
+    } else if (m.op === 0 && (m.t === "INIT_STATE" || m.t === "PRESENCE_UPDATE")) {
+      liveSocket = ws;
+      retry = 1000;
+      applyPresence(m.d);
+    }
+  };
+  ws.onclose = () => {
+    clearInterval(beat);
+    if (liveSocket === ws) liveSocket = null;
+    setTimeout(() => connectLive(Math.min(retry * 2, 30000)), retry);
+  };
+}
 presence();
-setInterval(presence, 15000);
+connectLive();
+setInterval(() => { if (!liveSocket) presence(); }, 15000);
 
 /* ============================================================
    repos (live from the github api)
@@ -617,6 +660,81 @@ function renderMusic() {
   rows.push(now);
   el.replaceChildren(...rows);
 }
+
+/* ---------- music tab: recently played ----------
+   A Cloudflare Worker (see worker/) checks Lanyard every minute and logs each
+   new Spotify play; this reads that log. */
+const playedAgo = (t) => {
+  const m = Math.floor((Date.now() - t) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? "yesterday" : `${d}d ago`;
+};
+const HISTORY_URL = "https://listening-log.desmixo.workers.dev/";
+let plays = null;
+let playsAt = 0;
+
+const samePlay = (a, b) => a.id === b.id && Math.abs(a.start - b.start) < 5000;
+
+// combine two lists of plays: no duplicates, newest first, last 50
+function mergePlays(a, b) {
+  const out = [...a];
+  for (const p of b) if (!out.some((q) => samePlay(p, q))) out.push(p);
+  return out.sort((x, y) => y.start - x.start).slice(0, 50);
+}
+
+// a song just finished on this page: show it in the list immediately
+// (the worker logs it too; the merge stops it showing twice)
+function notePlay(p) {
+  plays = mergePlays(plays || [], [p]);
+}
+
+async function loadHistory(force = false) {
+  // refetch at most every 30s unless asked
+  if (!force && playsAt && Date.now() - playsAt < 30000) return renderHistory();
+  try {
+    const r = await fetch(HISTORY_URL);
+    if (!r.ok) throw new Error(r.status);
+    plays = mergePlays(await r.json(), plays || []);
+    playsAt = Date.now();
+  } catch {
+    if (!plays) $("#historyList").innerHTML = '<p class="empty">couldn\'t load listening history right now.</p>';
+    return;
+  }
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = $("#historyList");
+  if (!el || !plays) return;
+  // skip the entry for the song that's playing right now; it's already shown above
+  const items = plays.filter((p, i) => !(i === 0 && spotify && p.id === spotify.track_id));
+  $("#histCount").textContent = items.length ? `· ${items.length}` : "";
+  if (!items.length) {
+    el.innerHTML = plays.length
+      ? '<p class="empty">just getting started. songs land here once the next one starts.</p>'
+      : '<p class="empty">nothing logged yet. songs show up here after they play.</p>';
+    return;
+  }
+  el.replaceChildren(...items.map((p) => {
+    const a = document.createElement("a");
+    a.className = "row";
+    a.href = `https://open.spotify.com/track/${encodeURIComponent(p.id)}`;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.innerHTML = `<img alt="" loading="lazy" /><div><b></b><span></span></div><em class="tagr"></em>`;
+    $("img", a).src = p.art;
+    $("b", a).textContent = p.song;
+    $("span", a).textContent = p.artist;
+    $(".tagr", a).textContent = playedAgo(p.start);
+    return a;
+  }));
+}
+// keep it fresh while the music tab is open
+setInterval(() => { if (current === "about" && !$('[data-sub="music"]').hidden) loadHistory(true); }, 30000);
 
 /* ============================================================
    settings + sound

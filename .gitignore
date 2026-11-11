@@ -19,3 +19,7 @@ public/assets/music/*
 
 .vercel
 .env*
+
+# cloudflare worker local files
+worker/.wrangler/
+worker/node_modules/

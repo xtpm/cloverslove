@@ -1,0 +1,17 @@
+﻿# cloudflare worker that logs what's playing on spotify (via lanyard)
+# deploy from this folder with: npx wrangler deploy
+name = "listening-log"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# check once a minute
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+DISCORD_ID = "262467539685212160"
+
+# filled in after `wrangler kv namespace create LOG`
+[[kv_namespaces]]
+binding = "LOG"
+id = "ec84ce13a4f34871bac554590645c187"
