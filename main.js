@@ -113,7 +113,7 @@ function camera(x, y, z) {
 // home: push the scene right and in a little so the character on the cliff
 // sits just beside the menu instead of behind it; each item nudges the frame.
 // sections: ease back so the left side of the landscape stays in view.
-const CHAR_X = 0.3; // where the character sits across the video frame (0..1)
+const CHAR_X = 0.42; // where the sleeping character sits across the video frame (0..1)
 const BLEED = 1.14; // .scene is inset -7% on each side
 
 // Work out the pan (% of the scene) and zoom that put the character at

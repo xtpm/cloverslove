@@ -1,5 +1,5 @@
 :root {
-  --iris: #ffd88a;            /* accent: the warm sunlight from the scene */
+  --iris: #ffb3c4;            /* accent: soft pink, echoing the red in the scene */
   --night: #221d38;
   --ink: #f2f5ff;
   --dim: rgba(232, 238, 255, .78);
@@ -310,7 +310,7 @@ body:not(.is-locked) .home.entering .menu button, body:not(.is-locked) .home.ent
 /* ================= phones ================= */
 @media (max-width: 820px) {
   body.is-section { overflow-y: auto; }
-  #bg { object-position: 24% 50%; } /* keep the character on the cliff in frame */
+  #bg { object-position: 42% 50%; } /* keep the sleeping character in frame */
   .tint { background: linear-gradient(0deg, rgba(26, 20, 48, .88) 0%, rgba(26, 20, 48, .45) 45%, rgba(26, 20, 48, .1) 70%); }
   .is-section .tint::after { background: rgba(26, 20, 48, .8); }
   .home { bottom: calc(76px + env(safe-area-inset-bottom)); }

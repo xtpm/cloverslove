@@ -16,7 +16,11 @@
   <!-- ========== background ========== -->
   <div class="world" aria-hidden="true">
     <div class="scene" id="scene">
-      <video id="bg" src="/assets/video/landscape.mp4" autoplay muted loop playsinline preload="auto"></video>
+      <!-- full 4K on bigger screens; a light 1080p copy for phones -->
+      <video id="bg" autoplay muted loop playsinline preload="auto">
+        <source src="/assets/video/rikka-4k.mp4" type="video/mp4" media="(min-width: 1100px)" />
+        <source src="/assets/video/rikka.mp4" type="video/mp4" />
+      </video>
     </div>
     <div class="tint"></div>
     <div class="scan"></div>

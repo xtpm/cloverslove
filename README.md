@@ -23,7 +23,8 @@ npm run dev
 
 | file | used for |
 | --- | --- |
-| `public/assets/video/landscape.mp4` | background video (genshin impact landscape, © HoYoverse) |
+| `public/assets/video/rikka-4k.mp4` | background video, full 4K (sleeping rikka from chūnibyō, via moewalls) |
+| `public/assets/video/rikka.mp4` | same video at 1080p, served to phones |
 | `public/assets/music/background.mp3` | background music (sabbath, from the saya no uta ost) |
 
 neither is mine; they're here for a non-commercial personal site and belong to their owners.

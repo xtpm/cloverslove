@@ -12,6 +12,8 @@ dyno/
 # only the media the live site uses is committed; old/unused files stay local
 public/assets/video/*
 !public/assets/video/landscape.mp4
+!public/assets/video/rikka.mp4
+!public/assets/video/rikka-4k.mp4
 public/assets/music/*
 !public/assets/music/background.mp3
 
