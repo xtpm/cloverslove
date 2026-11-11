@@ -12,10 +12,17 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-// "music" replaces the old "sound" key so everyone starts with music on
-const settings = Object.assign({ music: true, sfx: true, video: true, calm: false }, store.get("settings", {}));
+// Music always starts when you enter the site. Turning it off only lasts for
+// this tab (sessionStorage), so an old "off" can't silence every future visit.
+// Everything else is remembered in localStorage as before.
+const settings = Object.assign({ sfx: true, video: true, calm: false }, store.get("settings", {}));
 delete settings.sound;
-const saveSettings = () => store.set("settings", settings);
+settings.music = (() => { try { return sessionStorage.getItem("musicOff") !== "1"; } catch { return true; } })();
+const saveSettings = () => {
+  const { music, ...rest } = settings;
+  store.set("settings", rest);
+  try { music ? sessionStorage.removeItem("musicOff") : sessionStorage.setItem("musicOff", "1"); } catch {}
+};
 sfx.enabled = settings.sfx;
 
 /* ---------- ui sounds: hover + click, everywhere ---------- */
@@ -37,25 +44,33 @@ document.addEventListener("click", (e) => {
   sfx.play(el.matches(".opt, [role=tab]") ? "toggle" : "select");
 });
 
-/* ---------- intro ---------- */
-function playIntro(force = false) {
-  const intro = $("#intro");
-  let seen = false;
-  try { seen = sessionStorage.getItem("seenIntro"); } catch {}
-  if (seen && !force) { intro.classList.add("done"); return; }
-  intro.classList.remove("done", "show-line");
-  let n = 0;
-  const t = setInterval(() => {
-    $("#introCount").textContent = ++n;
-    if (n >= 9) {
-      clearInterval(t);
-      intro.classList.add("show-line");
-      setTimeout(() => intro.classList.add("done"), 900);
-      try { sessionStorage.setItem("seenIntro", "1"); } catch {}
-    }
-  }, 90);
+/* ---------- enter screen ----------
+   Clicking (or Enter / Space) parts the cover like curtains: a gold seam
+   flashes across the middle, then the halves slide away top and bottom,
+   while the scene settles in and the menu slides in.
+   The click also counts as the visitor's first gesture, so music and menu
+   sounds are allowed to start right away. */
+let entered = false;
+function enterSite(e) {
+  if (entered) return;
+  entered = true;
+  const splash = $("#splash");
+  splash.classList.add("opening");
+  sfx.unlock();
+  sfx.play("open");
+  if (settings.music) startMusic();
+  $("#home").classList.add("entering");
+  document.body.classList.remove("is-locked");
+  // the curtains finish in ~1.3s; remove the cover afterwards no matter what
+  setTimeout(() => splash.classList.add("gone"), settings.calm ? 0 : 1400);
+  setTimeout(() => $("#home").classList.remove("entering"), 2200);
+  if (!current) setTimeout(() => menuBtns[sel]?.focus({ preventScroll: true }), 900);
 }
-playIntro();
+$("#splash").addEventListener("click", enterSite);
+$("#splash").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); enterSite(); }
+});
+$("#splash").focus({ preventScroll: true });
 
 /* ---------- clock + birthday ---------- */
 const fmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", hour12: true });
@@ -151,7 +166,7 @@ menuBtns.forEach((b, i) => {
 /* wheel moves the selection like a game menu */
 let wheelAcc = 0, wheelLock = 0;
 addEventListener("wheel", (e) => {
-  if (current) return;
+  if (current || !entered) return;
   wheelAcc += e.deltaY;
   const now = performance.now();
   if (Math.abs(wheelAcc) < 30 || now < wheelLock) return;
@@ -161,6 +176,7 @@ addEventListener("wheel", (e) => {
 }, { passive: true });
 
 addEventListener("keydown", (e) => {
+  if (!entered) return; // the enter screen handles its own keys
   const typing = e.target.matches("input[type=search]");
   if (!current) {
     if (["ArrowDown", "s", "S"].includes(e.key)) { e.preventDefault(); select(sel + 1); }
@@ -190,7 +206,7 @@ function renderSection(name) {
   });
   showSub(sec, 0);
   if (name === "repos") loadRepos();
-  if (name === "about") renderMusic();
+  if (name === "about") { renderMusic(); loadRepos(); }
 }
 function showSub(sec, i) {
   $$("[data-sub]", sec).forEach((s, j) => (s.hidden = j !== i));
@@ -389,6 +405,7 @@ function loadRepos() {
       repos = data;
       $("#repoCount").textContent = repos.length;
       drawRepos();
+      renderLastWorked();
     })().catch(() => {
       reposPromise = null; // allow a retry next time the tab opens
       $("#repoList").innerHTML = '<p class="empty">couldn\'t reach github right now. <a class="u" href="https://github.com/xtpm" target="_blank" rel="noopener">see them there</a></p>';
@@ -527,6 +544,52 @@ function drawRepos() {
 }
 $("#repoSearch").addEventListener("input", drawRepos);
 
+/* ---------- last worked on: the most recently pushed repo + a live timer ---------- */
+let lastRepo = null;
+function sinceText(ms) {
+  let s = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(s / 86400); s %= 86400;
+  const h = Math.floor(s / 3600); s %= 3600;
+  const m = Math.floor(s / 60); s %= 60;
+  if (d) return `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+  if (h) return `${h}h ${pad(m)}m ${pad(s)}s`;
+  return `${m}m ${pad(s)}s`;
+}
+function tickSince() {
+  if (!lastRepo) return;
+  const t = sinceText(Date.now() - new Date(lastRepo.pushed));
+  $$("[data-since]").forEach((el) => (el.textContent = t));
+}
+setInterval(tickSince, 1000);
+
+function renderLastWorked() {
+  if (!repos || !repos.length) return;
+  lastRepo = [...repos].sort((a, b) => new Date(b.pushed) - new Date(a.pushed))[0];
+  $("#lastRepoName").textContent = lastRepo.name;
+  $("#lastRepoAbout").textContent = lastRepo.name;
+  $("#lastWorked").hidden = false;
+  tickSince();
+}
+
+// open a repo's info panel in the list, scrolling it into view
+function openRepo(name) {
+  const search = $("#repoSearch");
+  if (search.value) { search.value = ""; drawRepos(); }
+  const row = $$(".repo").find((r) => $(".repo-name", r).textContent === name);
+  const r = repos && repos.find((x) => x.name === name);
+  if (!row || !r) return;
+  if (!row.classList.contains("open")) toggleRepo(row, r);
+  row.scrollIntoView({ behavior: settings.calm ? "auto" : "smooth", block: "nearest" });
+  row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+}
+$("#lastWorked").addEventListener("click", () => lastRepo && openRepo(lastRepo.name));
+// from the about page: the link already switches to repos; then open that repo
+$("#lastRepoAbout").addEventListener("click", () => {
+  if (!lastRepo) return;
+  const name = lastRepo.name;
+  setTimeout(() => loadRepos().then(() => openRepo(name)), 650);
+});
+
 /* ---------- music tab: what's on spotify ---------- */
 let spTimer;
 function renderMusic() {
@@ -644,7 +707,6 @@ $$("[data-setting]").forEach((i) =>
   })
 );
 applySettings();
-$("#replayIntro").addEventListener("click", () => playIntro(true));
 
 /* ---------- background video ---------- */
 function applyVideo() {

@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=DotGothic16&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
-<body class="is-home">
+<body class="is-home is-locked">
   <!-- ========== background ========== -->
   <div class="world" aria-hidden="true">
     <div class="scene" id="scene">
@@ -22,10 +22,17 @@
     <div class="scan"></div>
   </div>
 
-  <!-- ========== intro ========== -->
-  <div class="intro" id="intro" aria-hidden="true">
-    <span class="intro-count" id="introCount">0</span>
-    <span class="intro-line">its all luck</span>
+  <!-- ========== enter screen ========== -->
+  <div class="splash" id="splash" role="button" tabindex="0" aria-label="enter the site">
+    <div class="curtain top" aria-hidden="true"></div>
+    <div class="curtain bottom" aria-hidden="true"></div>
+    <div class="seam" aria-hidden="true"></div>
+    <div class="splash-inner">
+      <p class="splash-name">dylan</p>
+      <span class="splash-rule"></span>
+      <p class="splash-cta"><span>click anywhere to continue</span><i class="caret"></i></p>
+    </div>
+    <p class="splash-foot">its all luck</p>
   </div>
 
   <!-- ========== home ========== -->
@@ -79,6 +86,10 @@
               <dd><span id="actTitle">not doing anything</span> <small id="actSub">discord is quiet.</small></dd>
             </div>
             <div>
+              <dt>last worked on</dt>
+              <dd><a class="u" id="lastRepoAbout" href="#repos">…</a> <small><span class="since" data-since></span> ago</small></dd>
+            </div>
+            <div>
               <dt>birthday</dt>
               <dd><span id="bdayCount">—</span> <small>until june 12</small></dd>
             </div>
@@ -112,6 +123,11 @@
         <div data-sub="repos">
           <h2>things i've built</h2>
           <p class="sub-note"><span id="repoCount">…</span> public repos, newest first. all on <a class="u" href="https://github.com/xtpm" target="_blank" rel="noopener">github</a></p>
+          <button class="last-worked" id="lastWorked" hidden>
+            <span class="lw-label"><i class="lw-dot"></i>last worked on</span>
+            <b id="lastRepoName"></b>
+            <span class="lw-timer"><span class="since" data-since></span> ago</span>
+          </button>
           <input class="search" id="repoSearch" type="search" placeholder="search…" aria-label="search repos" />
           <div class="list" id="repoList"><p class="empty">loading…</p></div>
         </div>
@@ -139,9 +155,7 @@
             <label class="opt"><span>music</span><input type="checkbox" data-setting="music" /><i class="sw"></i></label>
             <label class="opt"><span>menu sounds</span><input type="checkbox" data-setting="sfx" checked /><i class="sw"></i></label>
             <label class="opt"><span>moving background</span><input type="checkbox" data-setting="video" checked /><i class="sw"></i></label>
-            <label class="opt"><span>less motion</span><input type="checkbox" data-setting="calm" /><i class="sw"></i></label>
-            <button class="opt" id="replayIntro"><span>replay intro</span><em>↺</em></button>
-          </div>
+            <label class="opt"><span>less motion</span><input type="checkbox" data-setting="calm" /><i class="sw"></i></label>          </div>
         </div>
       </section>
     </div>

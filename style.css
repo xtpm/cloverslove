@@ -28,7 +28,9 @@ img { display: block; max-width: 100%; }
 .world { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: #9a8fb0; }
 .scene { position: absolute; inset: -7%;
   transform: translate(var(--cx), var(--cy)) scale(var(--cz));
-  transition: transform 1.8s var(--ease); }
+  transition: transform 1.8s var(--ease), filter 1.6s var(--ease); }
+/* before entering: pushed in, soft and dim; it settles into place on enter */
+.is-locked .scene { transform: translate(var(--cx), var(--cy)) scale(calc(var(--cz) * 1.16)); filter: blur(6px) brightness(.72) saturate(.9); }
 #bg { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
 /* dusk-violet shade, matched to the sky, so white text reads over a bright scene */
 .tint { position: absolute; inset: 0; transition: opacity 1.2s;
@@ -42,13 +44,55 @@ img { display: block; max-width: 100%; }
 .scan { position: absolute; inset: 0; opacity: .08; mix-blend-mode: overlay;
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .7) 0 1px, transparent 1px 3px); }
 
-/* ================= intro ================= */
-.intro { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; align-content: center; gap: 10px;
-  background: #0b0f1c; font-family: var(--pixel); transition: opacity .9s ease, visibility .9s; }
-.intro-count { font-size: 48px; color: rgba(255, 255, 255, .3); }
-.intro-line { font-size: 15px; letter-spacing: .1em; opacity: 0; transition: opacity .6s; }
-.intro.show-line .intro-line { opacity: 1; }
-.intro.done { opacity: 0; visibility: hidden; }
+/* ================= enter screen ================= */
+/* curtains: the cover is two halves that part top and bottom.
+   each half paints its share of one tall gradient, so they read as a single
+   piece until they move. a gold seam flashes across the split first. */
+.splash { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; cursor: pointer; outline: none; overflow: hidden; }
+.splash.opening { pointer-events: none; }
+.splash.gone { display: none; }
+.curtain { position: absolute; left: 0; right: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(22, 16, 42, .38), rgba(14, 10, 28, .8)) 0 0 / 100% 200%;
+  transition: transform 1.05s cubic-bezier(.65, 0, .25, 1) .22s; }
+.curtain.top { top: 0; bottom: 50%; background-position: 50% 0; }
+.curtain.bottom { top: 50%; bottom: 0; background-position: 50% 100%; }
+.splash.opening .curtain.top { transform: translateY(-101%); }
+.splash.opening .curtain.bottom { transform: translateY(101%); }
+.seam { position: absolute; left: 0; right: 0; top: 50%; height: 1px; margin-top: -.5px; background: var(--iris);
+  box-shadow: 0 0 12px var(--iris); transform: scaleX(0); opacity: 0; }
+.splash.opening .seam { animation: seam .9s cubic-bezier(.16, 1, .3, 1) forwards; }
+@keyframes seam {
+  0%   { transform: scaleX(0); opacity: 1; }
+  30%  { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+.splash-inner { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center;
+  transition: transform .7s var(--out), opacity .45s, filter .6s; }
+.splash.opening .splash-inner { transform: scale(1.12); opacity: 0; filter: blur(6px); }
+.splash-name { margin: 0; font-family: var(--name); font-size: clamp(64px, 11vw, 150px); line-height: .9; letter-spacing: -.03em; color: #fff;
+  text-shadow: 0 8px 40px rgba(10, 8, 30, .6); animation: rise 1.4s var(--out) both .15s; }
+.splash-rule { display: block; height: 1px; width: min(280px, 60vw); background: linear-gradient(90deg, transparent, var(--iris), transparent);
+  transform: scaleX(0); animation: draw 1.2s var(--out) forwards .7s; }
+.splash-cta { display: flex; align-items: center; gap: 6px; margin: 0; font-family: var(--pixel); font-size: 14px; letter-spacing: .14em; color: var(--dim);
+  animation: rise 1s var(--out) both 1.1s; }
+.splash-cta span { animation: breathe 2.6s ease-in-out infinite 2.1s; }
+.caret { width: 8px; height: 14px; background: var(--iris); animation: blink 1s steps(1) infinite; }
+.splash:hover .splash-cta, .splash:focus-visible .splash-cta { color: var(--ink); }
+.splash-foot { position: absolute; bottom: calc(26px + env(safe-area-inset-bottom)); margin: 0; font-family: var(--pixel); font-size: 12px; letter-spacing: .12em;
+  color: var(--faint); animation: rise 1s var(--out) both 1.4s; transition: opacity .3s; }
+.splash.opening .splash-foot { opacity: 0; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
+@keyframes draw { to { transform: scaleX(1); } }
+@keyframes breathe { 50% { opacity: .55; } }
+
+/* home pieces wait off-stage until you enter, then come in one after another */
+.home .brand-slot { transition: opacity 1s var(--out) .45s, transform 1.2s var(--out) .45s; }
+.is-locked .home .brand-slot { opacity: 0; transform: translateY(24px); }
+.is-locked .home .menu button, .is-locked .home .home-hint { opacity: 0; transform: translateX(-22px); }
+body:not(.is-locked) .home.entering .menu button, body:not(.is-locked) .home.entering .home-hint { transition-delay: calc(.75s + var(--n, 0) * 90ms); }
+.corner { transition: opacity 1s ease 1.2s; }
+.is-locked .corner { opacity: 0; transition-delay: 0s; }
 
 /* ================= name ================= */
 .brand { display: inline-flex; flex-direction: column; gap: 12px; transform-origin: top left; will-change: transform; }
@@ -125,7 +169,7 @@ img { display: block; max-width: 100%; }
 .pdot { width: 7px; height: 7px; background: #747f8d; }
 
 .facts { margin: 22px 0 6px; }
-.facts > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.facts > div { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .facts dt { font-family: var(--pixel); font-size: 12px; letter-spacing: .08em; color: var(--faint); padding-top: 2px; }
 .facts dd { margin: 0; font-size: 14.5px; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .facts small { color: var(--faint); font-size: 12.5px; margin-left: 4px; }
@@ -240,6 +284,22 @@ img { display: block; max-width: 100%; }
 .repo-actions a { font-family: var(--pixel); font-size: 12px; letter-spacing: .06em; color: var(--iris); padding: 5px 10px;
   border: 1px solid color-mix(in srgb, var(--iris) 50%, transparent); transition: background .15s, color .15s; }
 .repo-actions a:hover { background: var(--iris); color: var(--night); }
+
+/* "last worked on" banner at the top of repos */
+.last-worked { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 4px 14px; width: 100%; text-align: left;
+  padding: 12px 14px; margin: 0 0 14px; border: 1px solid color-mix(in srgb, var(--iris) 40%, transparent);
+  background: color-mix(in srgb, var(--iris) 8%, transparent); transition: background .15s, border-color .15s; }
+.last-worked:hover { background: color-mix(in srgb, var(--iris) 16%, transparent); border-color: var(--iris); }
+.lw-label { display: inline-flex; align-items: center; gap: 8px; font-family: var(--pixel); font-size: 11px; letter-spacing: .08em; color: var(--faint); }
+.lw-dot { width: 6px; height: 6px; border-radius: 50%; background: #6be38f; box-shadow: 0 0 0 0 rgba(107, 227, 143, .6); animation: ping 2s ease-out infinite; }
+@keyframes ping { 70%, 100% { box-shadow: 0 0 0 6px rgba(107, 227, 143, 0); } }
+.last-worked b { font-family: var(--name); font-weight: 400; font-size: 18px; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.last-worked:hover b { color: var(--iris); }
+.lw-timer { font-family: var(--pixel); font-size: 12px; letter-spacing: .04em; color: var(--iris); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.since { font-variant-numeric: tabular-nums; }
+.repo.flash .repo-main { animation: flash 1.2s ease-out; }
+@keyframes flash { 0%, 30% { background: color-mix(in srgb, var(--iris) 22%, transparent); } }
+@media (max-width: 420px) { .last-worked { grid-template-columns: 1fr auto; } .last-worked b { grid-column: 1 / -1; grid-row: 2; } }
 .repo-desc { display: block; font-size: 13.5px; color: var(--dim); margin-top: 3px; line-height: 1.5; }
 .repo-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 7px; font-family: var(--pixel); font-size: 11px; letter-spacing: .04em; color: var(--faint); }
 .repo-meta span { display: inline-flex; align-items: center; gap: 6px; }
@@ -267,7 +327,7 @@ img { display: block; max-width: 100%; }
   .corner { bottom: calc(18px + env(safe-area-inset-bottom)); }
   .corner.br .clock { display: none; }
   .msg { max-width: 50vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .facts > div { grid-template-columns: 80px minmax(0, 1fr); }
+  .facts > div { grid-template-columns: 104px minmax(0, 1fr); }
   .links b { font-size: 26px; }
 }
 @media (prefers-reduced-motion: reduce) {
